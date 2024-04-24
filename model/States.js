@@ -8,7 +8,7 @@ const StatesSchema = new Schema({
         required: true,
         unique: true
     },
-    funfacts: [String] // Array of fun facts
+    funfacts: [String] 
 });
 
 // Export the model
