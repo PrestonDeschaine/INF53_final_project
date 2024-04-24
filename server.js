@@ -8,7 +8,7 @@ const {logger} = require('./middleware/logEvents');
 const {errorHandler} = require('./middleware/errorHandler');
 const mongoose = require('mongoose');
 const connectDB = require('./config/dbConn');
-const PORT = process.env.port || 3500;
+const PORT = process.env.PORT || 3500;
 
 //Connect to MongoDB
 connectDB();
@@ -42,7 +42,7 @@ app.all( '*', (req,res) => {
 // user error handler
 app.use(errorHandler);
 
-// open mongoose connection for mondodb
+// open mongoose connection for mongodb
 mongoose.connection.once('open', () => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

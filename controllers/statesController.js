@@ -8,39 +8,41 @@ const data = {
 };
 
 // Combines the states from the JSON with MongoDB
-async function setFacts(){
-    for (const state in data.states){ 
-        const fact = await State.findOne({statecode: data.states[state].code}).exec(); // Compares each state
-        if (fact){   
-            data.states[state].funfacts = fact.funfacts; // Adds the fun facts to the JSON
+async function setFacts() {
+    const stateCodes = data.states.map(state => state.code);
+    const facts = await State.find({ statecode: { $in: stateCodes } }).exec();
+
+    for (const state of data.states) {
+        const fact = facts.find(fact => fact.statecode === state.code);
+        if (fact) {
+            state.funfacts = fact.funfacts;
         }
     }
 }
 
 // Runs setFacts to merge the JSON with MongoDB
-setFacts();
+setFacts().catch(err => console.error(err));
 
 // Get all states
-const getAllStates = async (req,res)=> {
-    // Check for query parameters
-    if (req.query){
-        if(req.query.contig == 'true')   // If contig is true, remove AK and HI
-        {
-            const result = data.states.filter(st => st.code != "AK" && st.code != "HI");
-            res.json(result);
-            return;
-        }
-        else if (req.query.contig == 'false') // If contig is false, display only AK and HI
-        {
-            const result = data.states.filter( st => st.code == "AK" || st.code == "HI");     
-            res.json(result);
-            return;
-        }
-    }
+const getAllStates = async (req, res) => {
+    try {
+        let result = data.states;
 
-    // Otherwise, return all states
-    res.json(data.states);
-}
+        if (req.query && req.query.contig) {
+            const contig = req.query.contig === 'true';
+            if (contig) {
+                result = result.filter(st => st.code !== "AK" && st.code !== "HI");
+            } else {
+                result = result.filter(st => st.code === "AK" || st.code === "HI");
+            }
+        }
+
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
 
 // Get one state
 const getState = (req,res)=> {
